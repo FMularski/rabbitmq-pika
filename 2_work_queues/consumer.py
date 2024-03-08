@@ -25,8 +25,7 @@ def callback(channel, method, properties, body):
 # this defines how many messages can be assigned to a worker
 # prefetch_count=1 --> worker: I do not take next message when I am still working on a previous one.
 channel.basic_qos(prefetch_count=1)
-# register the callback function as the code to be executed
-# when a message is published to the "hello" queue
+
 channel.basic_consume(queue="work_queue", on_message_callback=callback)  # removed auto_ack=True
 
 # enter the never-ending loop
