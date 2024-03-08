@@ -12,6 +12,15 @@ channel.queue_declare(queue="hello")
 
 # callback for receving a message from the queue
 def callback(channel, method, properties, body):
+    print("-------======== channel =========---------")
+    print("instance:", channel)
+    print(channel.__dict__)
+    print("-------======== method =========---------")
+    print("method:", method)
+    print(method.__dict__)
+    print("-------======== properties =========---------")
+    print("properties:", properties)
+    print(properties.__dict__)
     print("Message consumed:", body)
 
 
