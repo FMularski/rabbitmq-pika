@@ -1,0 +1,6 @@
+MQ_USERNAME = "guest"
+MQ_PASSWORD = "guest"
+MQ_HOST = "localhost"
+MQ_PORT = 5672
+MQ_VHOST = ""
+MQ_URL = f"amqp://{MQ_USERNAME}:{MQ_PASSWORD}@{MQ_HOST}:{MQ_PORT}/{MQ_VHOST}"
