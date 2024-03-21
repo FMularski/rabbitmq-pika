@@ -54,7 +54,7 @@ class FactorialRpcClient:
             result = self._call(n)
         except (AMQPConnectionError, StreamLostError):
             print("Reconnecting...")
-            self.__init__()  # reconnect
+            self.connect()
             result = self._call(n)
 
         return result
@@ -63,9 +63,7 @@ class FactorialRpcClient:
 rpc_client = FactorialRpcClient()
 
 while True:
-    print(
-        "n:",
-    )
+    print("n:")
     n = int(input())
     print(f" [x] Requesting factorial({n})")
     response = rpc_client.call(n)
