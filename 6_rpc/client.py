@@ -1,11 +1,18 @@
 import uuid
 
 import pika
+from pika.exceptions import AMQPConnectionError, StreamLostError
 from settings import MQ_URL
 
 
-class FibonacciRpcClient(object):
+class FactorialRpcClient:
     def __init__(self):
+        self.connect()
+
+        self.response = None
+        self.corr_id = None
+
+    def connect(self):
         self.connection = pika.BlockingConnection(pika.URLParameters(MQ_URL))
         self.channel = self.connection.channel()
 
@@ -13,18 +20,16 @@ class FibonacciRpcClient(object):
         self.callback_queue = result.method.queue  # name of the queue for receiveing responses
 
         self.channel.basic_consume(  # consume incoming responses
-            queue=self.callback_queue, on_message_callback=self.on_response, auto_ack=True
+            queue=self.callback_queue,
+            on_message_callback=self.on_response,
         )
-
-        self.response = None
-        self.corr_id = None
 
     def on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
             self.response = body
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    def call(self, n):
+    def _call(self, n):
         self.response = None
         self.corr_id = str(uuid.uuid4())
         self.channel.basic_publish(
@@ -43,9 +48,25 @@ class FibonacciRpcClient(object):
 
         return int(self.response)
 
+    def call(self, n):
+        # reconnect if connection is lost
+        try:
+            result = self._call(n)
+        except (AMQPConnectionError, StreamLostError):
+            print("Reconnecting...")
+            self.__init__()  # reconnect
+            result = self._call(n)
 
-rpc_client = FibonacciRpcClient()
+        return result
 
-print(" [x] Requesting factorial(5)")
-response = rpc_client.call(5)
-print(f" [.] Got {response}")
+
+rpc_client = FactorialRpcClient()
+
+while True:
+    print(
+        "n:",
+    )
+    n = int(input())
+    print(f" [x] Requesting factorial({n})")
+    response = rpc_client.call(n)
+    print(f" [.] Got {response}")
